@@ -18,11 +18,12 @@ class Camera:
         return f"Image captured at position {self.__position} with range {self.__range}"
     
     # Public method to process the image with some filters
-    def processImage(self, filters: list):
+    def processImage(self, shape, color, position):
         # Placeholder for processing the image using the provided filters
-        processed_data = f"Processing image with filters: {filters}"
-        print("Image processed:", processed_data)
-        return processed_data
+        self.shape = shape
+        self.color = color
+        self.position = position
+        return processed_image
     
 # Example usage:
 camera = Camera(1080, 500.0, [10, 20, 30])
