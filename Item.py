@@ -2,21 +2,26 @@ class Item:
     valid_colors = ["red", "blue", "yellow", "green"]
     valid_shapes = ["triangle", "square", "circle"]
 
-    def __init__(self, color: str, shape: str, position: int, id: int):
+    def __init__(self, color, shape, position, id):
         if color not in Item.valid_colors:
             raise ValueError(f"Invalid color: {color}. Valid options are: {Item.valid_colors}")
         if shape not in Item.valid_shapes:
             raise ValueError(f"Invalid shape: {shape}. Valid options are: {Item.valid_shapes}")
+
+        self.__color = color
+        self.__shape = shape
+        self.__position = position
+        self.__id = id
+
+    def getPosition(self):
         
-        self.color = color
-        self.shape = shape
-        self.position = position
-        self.id = id
+        return self.__position
 
-    def getPosition(self) -> int:
-        """Returns the position of the item."""
-        return self.position
-
-    def getInfo(self) -> str:
-        """Returns a formatted string with information about the item."""
-        return f"Item ID: {self.id}, Color: {self.color}, Shape: {self.shape}, Position: {self.position}"
+    def getInfo(self):
+        readyItem = {
+            "color": self.__color,
+            "shape": self.__shape,
+            "position": self.__position,
+            "id": self.__id
+        }
+        return readyItem

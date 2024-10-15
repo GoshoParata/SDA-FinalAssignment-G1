@@ -6,15 +6,18 @@ from Item import Item
 
 
 class GUI:
-    def __init__(self):
-        self._isItemSelected = False
-        self._itemOptions = []
-        self._isProcessLoading = False
-        self._errorMessage = ""
+    def __init__(self,isItemSelected, itemOptions, isProcessLoading, errorMessage):
+        self.__isItemSelected = isItemSelected
+        self.__itemOptions = itemOptions
+        self.__isProcessLoading = isProcessLoading
+        self.__errorMessage = errorMessage
 
-    def getItemList(self):
-        """Returns a list of items."""
-        return []
+    def addItem(self,itemColor, itemShape,itemPosition):
+        newItem = Item(itemColor, itemShape, itemPosition)
+        self.itemColor = Item.getInfo()["color"]
+        self.itemShape = Item.getInfo()["shape"]
+        self.itemPosition = Item.getPosition()
+        return [newItem]
 
     def renderItems(self):
         
