@@ -13,7 +13,7 @@ class Item:
         self.position = position
         self.id = id
 
-    def getPosition(self) -> int:
+    def getPosition(self) -> list:
         """Returns the position of the item."""
         return self.position
 

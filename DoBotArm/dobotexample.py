@@ -2,6 +2,7 @@ import threading
 import DoBotArm as dbt
 import time
 from serial.tools import list_ports
+
 homeX, homeY, homeZ = 170, 0, 0
 ctrlDobot = dbt.DoBotArm("COM3", homeX, homeY, homeZ, home= False)
 print("starting")
