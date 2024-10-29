@@ -9,6 +9,8 @@ class GUI:
         self.__errorMessage = errorMessage
         self.__items = []
         self.__shape_positions = []  # To store positions and sizes of shapes
+        self.__selected_shapes = []  # To store selected shapes
+        self.__selected_coordinates = []  # To store selected coordinates
 
     def setItems(self, items):
         self.__items = items
@@ -44,9 +46,14 @@ class GUI:
             shape = item_info[0]
             color = item_info[1]
             position = (x_offset + item_width // 2, y_position)
-            self.drawShape(screen, shape, self.getColor(color), position)
             self.__shape_positions.append((shape, position, item_width, 80, color))  # Store shape, position, size, and color
             x_offset += item_width  # Move to the right for the next item
+
+        # Draw shapes with outlines if selected
+        for shape, position, width, height, color in self.__shape_positions:
+            if (shape, color) in self.__selected_shapes:
+                self.drawShape(screen, shape, (255, 255, 255), position, outline=True)
+            self.drawShape(screen, shape, self.getColor(color), position)
 
         pygame.display.flip()  # Update the display
 
@@ -71,17 +78,18 @@ class GUI:
         }
         return colors.get(color_name, (255, 255, 255))  # Default to white if color not found
 
-    def drawShape(self, screen, shape, color, position):
+    def drawShape(self, screen, shape, color, position, outline=False):
+        size_offset = 5 if outline else 0
         if shape == "triangle":
             pygame.draw.polygon(screen, color, [
-                (position[0], position[1] - 40),  # Top point
-                (position[0] - 40, position[1] + 40),  # Bottom left point
-                (position[0] + 40, position[1] + 40)  # Bottom right point
+                (position[0], position[1] - 40 - size_offset),  # Top point
+                (position[0] - 40 - size_offset, position[1] + 40 + size_offset),  # Bottom left point
+                (position[0] + 40 + size_offset, position[1] + 40 + size_offset)  # Bottom right point
             ])
         elif shape == "square":
-            pygame.draw.rect(screen, color, (position[0] - 40, position[1] - 40, 80, 80))  # Centered larger square
+            pygame.draw.rect(screen, color, (position[0] - 40 - size_offset, position[1] - 40 - size_offset, 80 + 2 * size_offset, 80 + 2 * size_offset))  # Centered larger square
         elif shape == "circle":
-            pygame.draw.circle(screen, color, position, 40)  # Larger circle
+            pygame.draw.circle(screen, color, position, 40 + size_offset)  # Larger circle
 
     def itemSelected(self, mouse_pos):
         """Handles item selection."""
@@ -89,20 +97,35 @@ class GUI:
             if shape == "triangle":
                 # Check if the mouse click is within the triangle
                 if self.isPointInTriangle(mouse_pos, position):
-                    self.printCoordinates(shape, color)
+                    self.toggleSelection(shape, color)
             elif shape == "square":
                 # Check if the mouse click is within the square
                 if self.isPointInRect(mouse_pos, position, width, height):
-                    self.printCoordinates(shape, color)
+                    self.toggleSelection(shape, color)
             elif shape == "circle":
                 # Check if the mouse click is within the circle
                 if self.isPointInCircle(mouse_pos, position, 40):
-                    self.printCoordinates(shape, color)
+                    self.toggleSelection(shape, color)
 
-    def printCoordinates(self, shape, color):
-        """Prints all coordinates for the given shape and color."""
-        coordinates = [item.getInfo()[2] for item in self.__items if item.getInfo()[0] == shape and item.getInfo()[1] == color]
-        print(f"Coordinates for {shape} {color}: {coordinates}")
+    def toggleSelection(self, shape, color):
+        """Toggles the selection of a shape."""
+        if (shape, color) in self.__selected_shapes:
+            self.__selected_shapes.remove((shape, color))
+        else:
+            self.__selected_shapes.append((shape, color))
+        self.updateSelectedCoordinates()
+        self.renderItems()  # Re-render items to update the outline
+
+    def updateSelectedCoordinates(self):
+        """Updates the list of selected coordinates."""
+        self.__selected_coordinates = []
+        for shape, color in self.__selected_shapes:
+            self.__selected_coordinates.extend([item.getInfo()[2] for item in self.__items if item.getInfo()[0] == shape and item.getInfo()[1] == color])
+        print(f"Selected coordinates: {self.__selected_coordinates}")
+
+    def getSelectedCoordinates(self):
+        """Returns the stored coordinates."""
+        return self.__selected_coordinates
 
     def isPointInTriangle(self, point, position):
         # Barycentric technique to check if point is in triangle
@@ -151,8 +174,13 @@ items = [
     Item("circle", "green", (250, 50)),
     Item("triangle", "red", (78, 50)),
     Item("triangle", "red", (420, 705)),
+    Item("circle", "yellow", (45, 98)),
 ]
 
 gui = GUI(False, [], False, "")
 gui.setItems(items)
 gui.renderItems()
+
+# Access the selected coordinates
+selected_coordinates = gui.getSelectedCoordinates()
+print(f"Selected coordinates: {selected_coordinates}")
