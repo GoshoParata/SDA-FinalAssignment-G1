@@ -1,5 +1,6 @@
 import pygame
 from Item import Item
+from Camera import Camera
 
 class GUI:
     def __init__(self, isItemSelected, itemOptions, isProcessLoading, errorMessage):
@@ -11,6 +12,8 @@ class GUI:
         self.__shape_positions = []  # To store positions and sizes of shapes
         self.__selected_shapes = []  # To store selected shapes
         self.__selected_coordinates = []  # To store selected coordinates
+        self.camera = Camera()
+        self.button_rect = pygame.Rect(650, 550, 140, 40)  # Button position and size
 
     def setItems(self, items):
         self.__items = items
@@ -55,19 +58,10 @@ class GUI:
                 self.drawShape(screen, shape, (255, 255, 255), position, outline=True)
             self.drawShape(screen, shape, self.getColor(color), position)
 
+        # Draw the button
+        self.drawButton(screen)
+
         pygame.display.flip()  # Update the display
-
-        # Event loop to keep the window open
-        running = True
-        while running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    self.itemSelected(event.pos)
-            pygame.time.delay(100)  # Add a delay to prevent high CPU usage
-
-        pygame.quit()
 
     def getColor(self, color_name):
         colors = {
@@ -90,6 +84,13 @@ class GUI:
             pygame.draw.rect(screen, color, (position[0] - 40 - size_offset, position[1] - 40 - size_offset, 80 + 2 * size_offset, 80 + 2 * size_offset))  # Centered larger square
         elif shape == "circle":
             pygame.draw.circle(screen, color, position, 40 + size_offset)  # Larger circle
+
+    def drawButton(self, screen):
+        """Draws the 'Run DoBot' button."""
+        pygame.draw.rect(screen, (255, 0, 0), self.button_rect)  # Red button
+        font = pygame.font.Font(None, 36)
+        text = font.render('Run DoBot', True, (255, 255, 255))
+        screen.blit(text, (self.button_rect.x + 10, self.button_rect.y + 5))
 
     def itemSelected(self, mouse_pos):
         """Handles item selection."""
@@ -121,7 +122,7 @@ class GUI:
         self.__selected_coordinates = []
         for shape, color in self.__selected_shapes:
             self.__selected_coordinates.extend([item.getInfo()[2] for item in self.__items if item.getInfo()[0] == shape and item.getInfo()[1] == color])
-        print(f"Selected coordinates: {self.__selected_coordinates}")
+        # print(f"Selected coordinates: {self.__selected_coordinates}")
 
     def getSelectedCoordinates(self):
         """Returns the stored coordinates."""
@@ -156,8 +157,38 @@ class GUI:
         pass
 
     def initCamera(self):
-        """Initializes the camera."""
-        pass
+        """Initializes the camera and continuously updates the GUI with detected shapes."""
+        running = True
+        pygame.init()
+        screen = pygame.display.set_mode((800, 600))
+        pygame.display.set_caption('Camera Feed')
+
+        while running:
+            frame, gray_frame, edges, masks = self.camera.getImage()
+            if frame is not None:
+                detected_shapes, processed_frame = self.camera.processImage(frame, masks)
+                items = [Item(shape, color, position) for shape, color, position in detected_shapes]
+                self.setItems(items)
+                self.renderItems()
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if self.button_rect.collidepoint(event.pos):
+                        self.runDobot()
+                    else:
+                        self.itemSelected(event.pos)
+
+            pygame.time.delay(100)  # Add a delay to prevent high CPU usage
+
+        self.camera.release()
+        pygame.quit()
+
+    def runDobot(self):
+        """Sends the selected coordinates to the terminal."""
+        selected_coordinates = self.getSelectedCoordinates()
+        print(f"Running DoBot with coordinates: {selected_coordinates}")
 
     def initDobot(self):
         """Initializes the Dobot."""
@@ -168,18 +199,8 @@ class GUI:
         pygame.quit()
 
 # Example usage
-items = [
-    Item("triangle", "red", (50, 50)),
-    Item("square", "blue", (150, 50)),
-    Item("circle", "green", (250, 50)),
-    Item("triangle", "red", (78, 50)),
-    Item("triangle", "red", (420, 705)),
-    Item("circle", "yellow", (45, 98)),
-]
-
 gui = GUI(False, [], False, "")
-gui.setItems(items)
-gui.renderItems()
+gui.initCamera()
 
 # Access the selected coordinates
 selected_coordinates = gui.getSelectedCoordinates()
