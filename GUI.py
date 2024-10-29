@@ -8,6 +8,7 @@ class GUI:
         self.__isProcessLoading = isProcessLoading
         self.__errorMessage = errorMessage
         self.__items = []
+        self.__shape_positions = []  # To store positions and sizes of shapes
 
     def setItems(self, items):
         self.__items = items
@@ -21,7 +22,7 @@ class GUI:
         unique_items = []
         seen_items = set()
         for item in self.__items:
-            item_info = (item.getInfo()[0], item.getInfo()[1])  # Only consider color and shape for uniqueness
+            item_info = (item.getInfo()[0], item.getInfo()[1])  # Only consider shape and color for uniqueness
             if item_info not in seen_items:
                 seen_items.add(item_info)
                 unique_items.append(item_info)
@@ -36,11 +37,15 @@ class GUI:
         start_x = (800 - total_width) // 2  # Center the items horizontally
         y_position = 300  # Fixed y position for all items
 
+        self.__shape_positions = []  # Clear previous positions
+
         x_offset = start_x
         for item_info in unique_items:
-            color = self.getColor(item_info[0])
-            shape = item_info[1]
-            self.drawShape(screen, shape, color, (x_offset + item_width // 2, y_position))
+            shape = item_info[0]
+            color = item_info[1]
+            position = (x_offset + item_width // 2, y_position)
+            self.drawShape(screen, shape, self.getColor(color), position)
+            self.__shape_positions.append((shape, position, item_width, 80, color))  # Store shape, position, size, and color
             x_offset += item_width  # Move to the right for the next item
 
         pygame.display.flip()  # Update the display
@@ -51,6 +56,8 @@ class GUI:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    self.itemSelected(event.pos)
             pygame.time.delay(100)  # Add a delay to prevent high CPU usage
 
         pygame.quit()
@@ -76,9 +83,50 @@ class GUI:
         elif shape == "circle":
             pygame.draw.circle(screen, color, position, 40)  # Larger circle
 
-    def itemSelected(self):
+    def itemSelected(self, mouse_pos):
         """Handles item selection."""
-        pass
+        for shape, position, width, height, color in self.__shape_positions:
+            if shape == "triangle":
+                # Check if the mouse click is within the triangle
+                if self.isPointInTriangle(mouse_pos, position):
+                    self.printCoordinates(shape, color)
+            elif shape == "square":
+                # Check if the mouse click is within the square
+                if self.isPointInRect(mouse_pos, position, width, height):
+                    self.printCoordinates(shape, color)
+            elif shape == "circle":
+                # Check if the mouse click is within the circle
+                if self.isPointInCircle(mouse_pos, position, 40):
+                    self.printCoordinates(shape, color)
+
+    def printCoordinates(self, shape, color):
+        """Prints all coordinates for the given shape and color."""
+        coordinates = [item.getInfo()[2] for item in self.__items if item.getInfo()[0] == shape and item.getInfo()[1] == color]
+        print(f"Coordinates for {shape} {color}: {coordinates}")
+
+    def isPointInTriangle(self, point, position):
+        # Barycentric technique to check if point is in triangle
+        px, py = point
+        x1, y1 = position[0], position[1] - 40
+        x2, y2 = position[0] - 40, position[1] + 40
+        x3, y3 = position[0] + 40, position[1] + 40
+
+        denominator = ((y2 - y3) * (x1 - x3) + (x3 - x2) * (y1 - y3))
+        a = ((y2 - y3) * (px - x3) + (x3 - x2) * (py - y3)) / denominator
+        b = ((y3 - y1) * (px - x3) + (x1 - x3) * (py - y3)) / denominator
+        c = 1 - a - b
+
+        return 0 <= a <= 1 and 0 <= b <= 1 and 0 <= c <= 1
+
+    def isPointInRect(self, point, position, width, height):
+        px, py = point
+        rx, ry = position[0] - width // 2, position[1] - height // 2
+        return rx <= px <= rx + width and ry <= py <= ry + height
+
+    def isPointInCircle(self, point, position, radius):
+        px, py = point
+        cx, cy = position
+        return (px - cx) ** 2 + (py - cy) ** 2 <= radius ** 2
 
     def throwError(self):
         """Handles error throwing."""
@@ -98,11 +146,11 @@ class GUI:
 
 # Example usage
 items = [
-    Item("red", "triangle", (50, 50)),
-    Item("blue", "square", (150, 50)),
-    Item("green", "circle", (250, 50)),
-    Item("red", "triangle", (78, 50)),
-    Item("red", "triangle", (100, 50)),
+    Item("triangle", "red", (50, 50)),
+    Item("square", "blue", (150, 50)),
+    Item("circle", "green", (250, 50)),
+    Item("triangle", "red", (78, 50)),
+    Item("triangle", "red", (420, 705)),
 ]
 
 gui = GUI(False, [], False, "")
