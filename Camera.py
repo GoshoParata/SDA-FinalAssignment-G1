@@ -33,6 +33,8 @@ class Camera:
             print("Failed to grab frame")
             return None, None, None, None
         
+        #cropped_frame = 
+        
         # Convert BGR to HSV for color segmentation
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         # Apply a bilateral filter to reduce noise but preserve edges
@@ -77,20 +79,16 @@ class Camera:
                     continue  # Skip contours outside the defined area range
 
                 # Approximate the shape of the contour
-                approx = cv2.approxPolyDP(contour, 0.03 * cv2.arcLength(contour, True), True)
+                approx = cv2.approxPolyDP(contour, 0.035 * cv2.arcLength(contour, True), True)
                 num_vertices = len(approx)
                 shape = "unidentified"
 
                 # Determine the shape based on the number of vertices
                 if num_vertices == 3:
                     shape = "triangle"
-                elif num_vertices == 4:
+                elif num_vertices == 4 or num_vertices == 5:
                     shape = "square"
-                elif num_vertices == 5:
-                    shape = "pentagon"
-                elif num_vertices == 6:
-                    shape = "hexagon"
-                elif num_vertices > 6:
+                elif num_vertices > 5:
                     shape = "circle"
 
                 # Calculate the centroid of the shape
