@@ -11,7 +11,7 @@ from GUI import GUI
 homeX, homeY, homeZ = [209, 0, 17]  # Home is above the conveyor
 
 # Create an instance of the RobotArm
-robot_arm = RobotArm("COM10", homeX, homeY, homeZ, home=True)
+robot_arm = RobotArm("COM10", home=True)
 print("Robot arm initialized.")
 
 # Initialize the GUI
@@ -49,17 +49,9 @@ def run_dobot():
             print(f"New coordinates: {new_coordinates}")
 
             # Use the new coordinates in the robot arm operations
-            item1pos = robot_arm.processRawCoordinates(new_coordinates)
-            for pos in item1pos:
-                robot_arm.moveTo([209, -160, 17])
-                robot_arm.moveTo(pos)
-                robot_arm.pickUpItem()
-                robot_arm.moveTo([209, -160, 17])
-                robot_arm.moveTo([209, 0, 17])
-                robot_arm.pickUpItem()
-                robot_arm.DoConveyor()
+            transformed_coordinates = robot_arm.processRawCoordinates(new_coordinates)
+            robot_arm.moveTo(transformed_coordinates)
             print("DoBot arm operations completed.")
-            robot_arm.DoConveyor()  # Turn off the conveyor after everything is done
 
             # Add the new coordinates to the processed set
             processed_coordinates.update(tuple(coord) for coord in new_coordinates)

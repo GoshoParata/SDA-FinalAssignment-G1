@@ -9,26 +9,26 @@ class State:
         self.step_func = step_func if step_func else self.default_step
         self.leave_func = leave_func if leave_func else self.default_leave
 
-    def entry(self):
+    def Error(self):
         """Executes the entry function (custom or default)."""
         self.entry_func()
 
-    def step(self):
+    def searchForItems(self):
         """Executes the step function (custom or default)."""
         return self.step_func()
 
-    def leave(self):
+    def waitForUserInput(self):
         """Executes the leave function (custom or default)."""
         self.leave_func()
 
-    def default_entry(self):
+    def PickAndPlace(self):
         print(f"Entering {self.name} state")
 
-    def default_step(self):
+    def MoveConveyor(self):
         print(f"Running {self.name} state")
         return None  # Return None by default, indicating no state change
 
-    def default_leave(self):
+    def EXIT(self):
         print(f"Leaving {self.name} state")
 
 

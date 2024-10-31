@@ -5,32 +5,41 @@ from serial.tools import list_ports
 from DoBotArm import DoBotArm
 
 class RobotArm:
-    def __init__(self, port, homeX, homeY, homeZ, home= True):
-        self.homePosition = [homeX, homeY, homeZ]  # Array containing the home position coordinates
-        self.ctrlDobot = dbt.DoBotArm(port, homeX, homeY, homeZ, home= True) 
-        self.ctrlDobot.moveArmXYZ(x= homeX, y= homeY, z= homeZ)
-        self.status = "Idle"
+    def __init__(self, port, home= True):
+        self.homePosition = [209, 0, 17]  # Array containing the home position coordinates
+        self.ctrlDobot = dbt.DoBotArm(port, self.homePosition[0], self.homePosition[1], self.homePosition[2], home= True) 
+        self.ctrlDobot.moveArmXYZ(x=self.homePosition[0], y=self.homePosition[1], z=self.homePosition[2])
         self.conveyor_running = False
 
 
-    def moveTo(self, coordinates):
-        x, y, z = coordinates
+    def moveTo(self, coordinates_list):
         # Define the limits for the arm's reach
         x_min, x_max = -255, 255
         y_min, y_max = -255, 255
         z_min, z_max = -50, 69
 
-        # Check if the coordinates are within the limits
-        if not (x_min <= x <= x_max and y_min <= y <= y_max and z_min <= z <= z_max):
-            self.status = "Error"
-            raise ValueError(f"Coordinates ({x}, {y}, {z}) are out of reach. "
-                            f"Limits are x: [{x_min}, {x_max}], y: [{y_min}, {y_max}], z: [{z_min}, {z_max}].")
+        for coordinates in coordinates_list:
+            x, y, z = coordinates
 
-        # Move the arm to the specified coordinates
-        self.status = "Moving"
-        self.ctrlDobot.moveArmXYZ(x=x, y=y, z=z)
-        #self.status = "Idle"
-        #self.statusCheck()
+            # Check if the coordinates are within the limits
+            if not (x_min <= x <= x_max and y_min <= y <= y_max and z_min <= z <= z_max):
+                raise ValueError(f"Coordinates ({x}, {y}, {z}) are out of reach. "
+                                 f"Limits are x: [{x_min}, {x_max}], y: [{y_min}, {y_max}], z: [{z_min}, {z_max}].")
+
+            # The moving starts from the home position
+            self.ctrlDobot.moveArmXYZ(x=self.homePosition[0], y=self.homePosition[1], z=self.homePosition[2])
+            # The arm must move through [209, -160, 17] to avoid collisions
+            self.ctrlDobot.moveArmXYZ(x=209, y=-160, z=17)
+            # Move the arm to the specified coordinates
+            self.ctrlDobot.moveArmXYZ(x=x, y=y, z=z)
+            # Pick up the item
+            self.pickUpItem()
+            # The arm must move through [209, -160, 17] to avoid collisions
+            self.ctrlDobot.moveArmXYZ(x=209, y=-160, z=17)
+            # The moving finishes the movement at the home position
+            self.ctrlDobot.moveArmXYZ(x=self.homePosition[0], y=self.homePosition[1], z=self.homePosition[2])
+
+        self.DoConveyor()
 
     def pickUpItem(self):
         self.ctrlDobot.toggleSuction()
