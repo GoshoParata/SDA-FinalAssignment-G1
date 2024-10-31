@@ -55,8 +55,8 @@ class RobotArm:
 
     def processRawCoordinates(self, itemPosition):
         # Transformation coefficients
-        a, b, c = -0.675, 0, 437.09
-        d, e, f = 0, 0.7, -370
+        a, b, c = -0.675, 0, 427.09
+        d, e, f = 0, 0.7, -360
         
         # Convert each (x, y) pair in the input list
         mm_coords = []

@@ -94,19 +94,25 @@ class GUI:
 
     def itemSelected(self, mouse_pos):
         """Handles item selection."""
+        was_selected = False
         for shape, position, width, height, color in self.__shape_positions:
             if shape == "triangle":
-                # Check if the mouse click is within the triangle
                 if self.isPointInTriangle(mouse_pos, position):
                     self.toggleSelection(shape, color)
+                    was_selected = True
             elif shape == "square":
-                # Check if the mouse click is within the square
                 if self.isPointInRect(mouse_pos, position, width, height):
                     self.toggleSelection(shape, color)
+                    was_selected = True
             elif shape == "circle":
-                # Check if the mouse click is within the circle
                 if self.isPointInCircle(mouse_pos, position, 40):
                     self.toggleSelection(shape, color)
+                    was_selected = True
+        
+        # Update coordinates if something was selected
+        if was_selected:
+            self.updateSelectedCoordinates()
+            self.renderItems()
 
     def toggleSelection(self, shape, color):
         """Toggles the selection of a shape."""
@@ -175,10 +181,12 @@ class GUI:
                 if event.type == pygame.QUIT:
                     running = False
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    if self.button_rect.collidepoint(event.pos):
+                    mouse_pos = event.pos
+                    if self.button_rect.collidepoint(mouse_pos):
+                        self.updateSelectedCoordinates()  # Update before running
                         self.runDobot()
                     else:
-                        self.itemSelected(event.pos)
+                        self.itemSelected(mouse_pos)
 
             pygame.time.delay(100)  # Add a delay to prevent high CPU usage
 
@@ -186,7 +194,8 @@ class GUI:
         pygame.quit()
 
     def runDobot(self):
-        """Sends the selected coordinates to the terminal."""
+        """Default runDobot implementation that can be overridden"""
+        self.updateSelectedCoordinates()  # Ensure coordinates are up to date
         selected_coordinates = self.getSelectedCoordinates()
         print(f"Running DoBot with coordinates: {selected_coordinates}")
 
