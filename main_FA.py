@@ -7,7 +7,7 @@ from GUI import GUI
 robot_arm = RobotArm("COM9", home=True)
 print("Robot arm initialized.")
 
-gui = GUI(False, [], False, "")
+gui = GUI()
 print("GUI initialized.")
 
 # Flag to indicate when the "Run DoBot" button is pressed
@@ -47,8 +47,8 @@ gui_thread = threading.Thread(target=run_gui)
 dobot_thread = threading.Thread(target=monitor_dobot)
 
 print("Starting threads...")
-gui_thread.start()
 dobot_thread.start()
+gui_thread.start()
 
 # Wait for both threads to complete
 gui_thread.join()

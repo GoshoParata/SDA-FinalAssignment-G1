@@ -3,26 +3,35 @@ from Item import Item
 from Camera import Camera
 
 class GUI:
-    def __init__(self, isItemSelected, itemOptions, isProcessLoading, errorMessage):
-        self.__isItemSelected = isItemSelected
-        self.__itemOptions = itemOptions
-        self.__isProcessLoading = isProcessLoading
-        self.__errorMessage = errorMessage
+    def __init__(self):
         self.__items = []
-        self.__shape_positions = []  # To store positions and sizes of shapes
-        self.__selected_shapes = []  # To store selected shapes
-        self.__selected_coordinates = []  # To store selected coordinates
+        self.__shape_positions = []
+        self.__selected_shapes = []
+        self.__selected_coordinates = []
         self.camera = Camera()
-        self.button_rect = pygame.Rect(650, 550, 140, 40)  # Button position and size
+        self.button_rect = pygame.Rect(650, 550, 140, 40)
+        self.screen = None
 
     def setItems(self, items):
         self.__items = items
 
     def renderItems(self):
-        pygame.init()
-        screen = pygame.display.set_mode((800, 600))
+        if not pygame.get_init():
+            pygame.init()
+        if not self.screen:
+            self.screen = pygame.display.set_mode((800, 600))
+            
         pygame.display.set_caption('Render Items')
-        screen.fill((0, 0, 0))  # Black background
+        self.screen.fill((0, 0, 0))  # Black background
+
+        # Get currently visible shapes and colors
+        visible_items = {(item.getInfo()[0], item.getInfo()[1]) for item in self.__items}
+        
+        # Filter out selections that are no longer visible
+        self.__selected_shapes = [
+            (shape, color) for shape, color in self.__selected_shapes 
+            if (shape, color) in visible_items
+        ]
 
         unique_items = []
         seen_items = set()
@@ -55,13 +64,16 @@ class GUI:
         # Draw shapes with outlines if selected
         for shape, position, width, height, color in self.__shape_positions:
             if (shape, color) in self.__selected_shapes:
-                self.drawShape(screen, shape, (255, 255, 255), position, outline=True)
-            self.drawShape(screen, shape, self.getColor(color), position)
+                self.drawShape(self.screen, shape, (255, 255, 255), position, outline=True)
+            self.drawShape(self.screen, shape, self.getColor(color), position)
 
         # Draw the button
-        self.drawButton(screen)
+        self.drawButton(self.screen)
 
         pygame.display.flip()  # Update the display
+
+        # Update coordinates after filtering selections
+        self.updateSelectedCoordinates()
 
     def getColor(self, color_name):
         colors = {
@@ -158,15 +170,10 @@ class GUI:
         cx, cy = position
         return (px - cx) ** 2 + (py - cy) ** 2 <= radius ** 2
 
-    def throwError(self):
-        """Handles error throwing."""
-        pass
-
     def initCamera(self):
-        """Initializes the camera and continuously updates the GUI with detected shapes."""
         running = True
-        pygame.init()
-        screen = pygame.display.set_mode((800, 600))
+        if not self.screen:
+            self.screen = pygame.display.set_mode((800, 600))
         pygame.display.set_caption('Camera Feed')
 
         while running:
@@ -199,18 +206,14 @@ class GUI:
         selected_coordinates = self.getSelectedCoordinates()
         print(f"Running DoBot with coordinates: {selected_coordinates}")
 
-    def initDobot(self):
-        """Initializes the Dobot."""
-        pass
-
     def exit(self):
-        """Exits the application."""
-        pygame.quit()
+        """Exits the application and cleans up resources."""
+        self.camera.release()
+        if pygame.get_init():
+            pygame.quit()
+        if hasattr(self, 'runDobot'):
+            self.runDobot = None
 
-# Example usage
-gui = GUI(False, [], False, "")
-gui.initCamera()
-
-# Access the selected coordinates
-selected_coordinates = gui.getSelectedCoordinates()
-print(f"Selected coordinates: {selected_coordinates}")
+if __name__ == "__main__":
+    gui = GUI(False, [], False, "")
+    gui.initCamera()
