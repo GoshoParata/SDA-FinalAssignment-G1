@@ -14,10 +14,16 @@ class RobotArm:
 
     def moveTo(self, coordinates_list):
         # Define the limits for the arm's reach
+
+        # x axis is perpendicular to the conveyor
+        # y axis is parallel to the conveyor
+        # z axis is vertical
+
         x_min, x_max = -255, 255
         y_min, y_max = -255, 255
         z_min, z_max = -50, 69
 
+        self.DoConveyor()   # Start the conveyor
         for coordinates in coordinates_list:
             x, y, z = coordinates
 
@@ -38,8 +44,11 @@ class RobotArm:
             self.ctrlDobot.moveArmXYZ(x=209, y=-160, z=17)
             # The moving finishes the movement at the home position
             self.ctrlDobot.moveArmXYZ(x=self.homePosition[0], y=self.homePosition[1], z=self.homePosition[2])
+            # Drop of the item
+            self.pickUpItem()
+            time.sleep(2)
 
-        self.DoConveyor()
+        self.DoConveyor()   # Stop the conveyor
 
     def pickUpItem(self):
         self.ctrlDobot.toggleSuction()
@@ -47,7 +56,7 @@ class RobotArm:
     def processRawCoordinates(self, itemPosition):
         # Transformation coefficients
         a, b, c = -0.675, 0, 437.09
-        d, e, f = 0, 0.7, -360
+        d, e, f = 0, 0.7, -370
         
         # Convert each (x, y) pair in the input list
         mm_coords = []

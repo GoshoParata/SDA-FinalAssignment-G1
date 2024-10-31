@@ -3,9 +3,7 @@ import time
 from RobotArmClass import RobotArm
 from GUI import GUI
 
-# x axis is perpendicular to the conveyor
-# y axis is parallel to the conveyor
-# z axis is vertical
+
 
 # Define the home position coordinates
 homeX, homeY, homeZ = [209, 0, 17]  # Home is above the conveyor
