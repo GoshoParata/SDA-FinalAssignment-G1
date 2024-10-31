@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 class Camera:
-    def __init__(self, camera_source=0, resolution=(640, 480)):
+    def __init__(self, camera_source=1, resolution=(640, 480)):
         """Initialize the Camera class with a camera source and optional resolution."""
         self.cap = cv2.VideoCapture(camera_source, cv2.CAP_DSHOW)
 

@@ -2,8 +2,7 @@ import threading
 import DoBotArm as dbt
 import time
 from serial.tools import list_ports
-#from DoBotArm import DoBotArm
-from GUI import GUI
+from DoBotArm import DoBotArm
 
 class RobotArm:
     def __init__(self, port, homeX, homeY, homeZ, home= True):
@@ -29,21 +28,12 @@ class RobotArm:
 
         # Move the arm to the specified coordinates
         self.status = "Moving"
-        self.statusCheck()
         self.ctrlDobot.moveArmXYZ(x=x, y=y, z=z)
         #self.status = "Idle"
         #self.statusCheck()
 
-    def getItemPosition(self, item):
-        # Get the item's position from the Item class
-        itemPosition = item.getPosition()
-        return itemPosition
-
     def pickUpItem(self):
         self.ctrlDobot.toggleSuction()
-
-    def statusCheck(self):
-        print(f"Arm status: {self.status}")
 
     def processRawCoordinates(self, itemPosition):
         # Transformation coefficients
@@ -59,7 +49,7 @@ class RobotArm:
         
         return mm_coords
 
-    def DoConvayor(self):
+    def DoConveyor(self):
         if self.conveyor_running:
             self.ctrlDobot.SetConveyor(enabled=False)
             self.conveyor_running = False
