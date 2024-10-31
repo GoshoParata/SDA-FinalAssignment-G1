@@ -4,12 +4,8 @@ from RobotArmClass import RobotArm
 from GUI import GUI
 
 
-
-# Define the home position coordinates
-homeX, homeY, homeZ = [209, 0, 17]  # Home is above the conveyor
-
 # Create an instance of the RobotArm
-robot_arm = RobotArm("COM10", home=True)
+robot_arm = RobotArm("COM9", home=True)
 print("Robot arm initialized.")
 
 # Initialize the GUI
